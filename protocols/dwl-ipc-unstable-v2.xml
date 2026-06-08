@@ -58,6 +58,12 @@ I would probably just submit raphi's patchset but I don't think that would be po
       </description>
       <arg name="name" type="string"/>
     </event>
+    <event name="mode_label">
+      <description summary="advertise available mode label">
+        Emitted during binding to advertise the names of defined modes.
+      </description>
+      <arg name="name" type="string" summary="the name of the mode"/>
+    </event>
   </interface>
 
   <interface name="zdwl_ipc_output_v2" version="2">
@@ -112,6 +118,12 @@ I would probably just submit raphi's patchset but I don't think that would be po
         Indicates a new layout is selected.
       </description>
       <arg name="layout" type="uint" summary="Index of the layout."/>
+    </event>
+    <event name="mode">
+      <description summary="emitted when the active mode changes">
+        Advertises the index of the newly active mode (-1 for NORMAL).
+      </description>
+      <arg name="mode" type="int" summary="the index of the active mode"/>
     </event>
 
     <event name="title">

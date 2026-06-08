@@ -1454,6 +1454,10 @@ dwl_ipc_manager_bind(struct wl_client *client, void *data, uint32_t version, uin
 
 	zdwl_ipc_manager_v2_send_tags(manager_resource, TAGCOUNT);
 
+	for (unsigned int i = 0; i < LENGTH(modes_labels); i++) {
+    zdwl_ipc_manager_v2_send_mode_label(manager_resource, modes_labels[i]);
+  }
+
 	for (unsigned int i = 0; i < LENGTH(layouts); i++)
 		zdwl_ipc_manager_v2_send_layout(manager_resource, layouts[i].symbol);
 }
@@ -1537,6 +1541,7 @@ dwl_ipc_output_printstatus_to(DwlIpcOutput *ipc_output)
 	appid = focused ? client_get_appid(focused) : "";
 
   //printf("%s mode %s\n", m->wlr_output->name, modes_labels[active_mode_index] ? modes_labels[active_mode_index] : "");
+  zdwl_ipc_output_v2_send_mode(ipc_output->resource, active_mode_index);
 	zdwl_ipc_output_v2_send_layout(ipc_output->resource, monitor->lt[monitor->sellt] - layouts);
 	zdwl_ipc_output_v2_send_title(ipc_output->resource, title);
 	zdwl_ipc_output_v2_send_appid(ipc_output->resource, appid);
