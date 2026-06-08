@@ -160,6 +160,11 @@ typedef struct {
 } Key;
 
 typedef struct {
+	int mode_index;
+	Key key;
+} Modekey;
+
+typedef struct {
 	struct wlr_keyboard_group *wlr_group;
 
 	int nsyms;
@@ -315,6 +320,7 @@ static void handlesig(int signo);
 static void incnmaster(const Arg *arg);
 static void inputdevice(struct wl_listener *listener, void *data);
 static int keybinding(uint32_t mods, xkb_keysym_t sym);
+static int modekeybinding(uint32_t mods, xkb_keysym_t sym);
 static void keypress(struct wl_listener *listener, void *data);
 static void keypressmod(struct wl_listener *listener, void *data);
 static int keyrepeat(void *data);
@@ -375,6 +381,7 @@ static Monitor *xytomon(double x, double y);
 static void xytonode(double x, double y, struct wlr_surface **psurface,
 		Client **pc, LayerSurface **pl, double *nx, double *ny);
 static void zoom(const Arg *arg);
+static void entermode(const Arg *arg);
 
 /* variables */
 static pid_t child_pid = -1;
@@ -429,6 +436,9 @@ static struct wlr_output_layout *output_layout;
 static struct wlr_box sgeom;
 static struct wl_list mons;
 static Monitor *selmon;
+
+static const int NORMAL = -1;
+static int active_mode_index = NORMAL;
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -1526,6 +1536,7 @@ dwl_ipc_output_printstatus_to(DwlIpcOutput *ipc_output)
 	title = focused ? client_get_title(focused) : "";
 	appid = focused ? client_get_appid(focused) : "";
 
+  //printf("%s mode %s\n", m->wlr_output->name, modes_labels[active_mode_index] ? modes_labels[active_mode_index] : "");
 	zdwl_ipc_output_v2_send_layout(ipc_output->resource, monitor->lt[monitor->sellt] - layouts);
 	zdwl_ipc_output_v2_send_title(ipc_output->resource, title);
 	zdwl_ipc_output_v2_send_appid(ipc_output->resource, appid);
@@ -1833,6 +1844,11 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
 	 * processing.
 	 */
 	const Key *k;
+
+	if (active_mode_index >= 0) {
+		return modekeybinding(mods, sym);
+	}
+
 	for (k = keys; k < END(keys); k++) {
 		if (CLEANMASK(mods) == CLEANMASK(k->mod)
 				&& xkb_keysym_to_lower(sym) == xkb_keysym_to_lower(k->keysym)
@@ -1843,6 +1859,30 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
 	}
 	return 0;
 }
+
+int
+modekeybinding(uint32_t mods, xkb_keysym_t sym)
+{
+	int handled = 0;
+	const Modekey *mk;
+	const Key *k;
+
+	for (mk = modekeys; mk < END(modekeys); mk++) {
+		if (active_mode_index != mk->mode_index) {
+			continue;
+		}
+
+		k = &mk->key;
+		if (CLEANMASK(mods) == CLEANMASK(k->mod) &&
+				sym == k->keysym && k->func) {
+			k->func(&k->arg);
+			handled = 1;
+		}
+	}
+
+	return handled;
+}
+
 
 void
 keypress(struct wl_listener *listener, void *data)
@@ -3275,6 +3315,13 @@ zoom(const Arg *arg)
 
 	focusclient(sel, 1);
 	arrange(selmon);
+}
+
+void
+entermode(const Arg *arg)
+{
+	active_mode_index = arg->i;
+	printstatus();
 }
 
 #ifdef XWAYLAND
