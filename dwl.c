@@ -1540,8 +1540,6 @@ dwl_ipc_output_printstatus_to(DwlIpcOutput *ipc_output)
 	title = focused ? client_get_title(focused) : "";
 	appid = focused ? client_get_appid(focused) : "";
 
-  //printf("%s mode %s\n", m->wlr_output->name, modes_labels[active_mode_index] ? modes_labels[active_mode_index] : "");
-  zdwl_ipc_output_v2_send_mode(ipc_output->resource, active_mode_index);
 	zdwl_ipc_output_v2_send_layout(ipc_output->resource, monitor->lt[monitor->sellt] - layouts);
 	zdwl_ipc_output_v2_send_title(ipc_output->resource, title);
 	zdwl_ipc_output_v2_send_appid(ipc_output->resource, appid);
@@ -1552,6 +1550,7 @@ dwl_ipc_output_printstatus_to(DwlIpcOutput *ipc_output)
 	if (wl_resource_get_version(ipc_output->resource) >= ZDWL_IPC_OUTPUT_V2_FLOATING_SINCE_VERSION) {
 		zdwl_ipc_output_v2_send_floating(ipc_output->resource, focused ? focused->isfloating : 0);
 	}
+	zdwl_ipc_output_v2_send_mode(ipc_output->resource, active_mode_index);
 	zdwl_ipc_output_v2_send_frame(ipc_output->resource);
 }
 
