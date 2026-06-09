@@ -23,9 +23,12 @@ dwl.o: dwl.c client.h config.h config.mk cursor-shape-v1-protocol.h \
 	ext-image-copy-capture-v1-protocol.h \
 	pointer-constraints-unstable-v1-protocol.h wlr-layer-shell-unstable-v1-protocol.h \
 	wlr-output-power-management-unstable-v1-protocol.h xdg-shell-protocol.h \
-	dwl-ipc-unstable-v2-protocol.h
+	dwl-ipc-unstable-v2-protocol.h wlr-foreign-toplevel-management-unstable-v1-protocol.h
 util.o: util.c util.h
 dwl-ipc-unstable-v2-protocol.o: dwl-ipc-unstable-v2-protocol.c dwl-ipc-unstable-v2-protocol.h
+wlr-foreign-toplevel-management-unstable-v1-protocol.h:
+	$(WAYLAND_SCANNER) server-header \
+		protocols/wlr-foreign-toplevel-management-unstable-v1.xml $@
 
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
